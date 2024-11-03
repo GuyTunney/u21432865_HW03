@@ -1,0 +1,74 @@
+﻿@model List<u21432865_HW03.Models.CurrentLoanReport>
+
+<h2>Current Loans Report</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Book Name</th>
+            <th>Student Name</th>
+            <th>Taken Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var loan in Model)
+        {
+            <tr>
+                <td>@loan.BookName</td>
+                <td>@loan.StudentName</td>
+                <td>@loan.TakenDate.ToShortDateString()</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Save Report Section -->
+<h3>Save Report</h3>
+<form id="reportSaveForm">
+    <div class="form-group">
+        <label for="filename">Filename</label>
+        <input type="text" class="form-control" id="filename" placeholder="Enter filename" required>
+    </div>
+    <div class="form-group">
+        <label for="filetype">File Type</label>
+        <select class="form-control" id="filetype" required>
+            <option value="">Select File Type</option>
+            <option value="pdf">PDF</option>
+            <option value="csv">CSV</option>
+            <option value="xlsx">Excel</option>
+        </select>
+    </div>
+    <button type="button" id="saveReportBtn" class="btn btn-primary">Save Report</button>
+</form>
+
+<script>
+    $(document).ready(function () {
+        $('#saveReportBtn').click(function () {
+            var reportData = {
+                filename: $('#filename').val(),
+                filetype: $('#filetype').val()
+            };
+
+            if (!reportData.filename || !reportData.filetype) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SaveReport", "Report")',
+                data: reportData,
+                success: function (response) {
+                    if (response.success) {
+                        alert('Report saved successfully!');
+                    } else {
+                        alert('Error saving report: ' + response.message);
+                    }
+                },
+                error: function () {
+                    alert('Error saving report.');
+                }
+            });
+        });
+    });
+</script>

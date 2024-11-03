@@ -1,0 +1,352 @@
+﻿@model u21432865_HW03.Models.HomeViewModel
+
+<style>
+    /* Table container styling */
+    .table-container {
+        border-radius: 0px;
+        overflow: hidden;
+        box-shadow: 0px 4px 1px rgba(0, 0, 0, 0.1);
+        margin-top: 15px;
+        width: 100%;
+    }
+
+    /* Header styling */
+    .table-custom th {
+        background-color: darkgreen; /* Green header color */
+        color: white;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    /* Table and cell styling */
+    .table-custom {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px; /* Smaller font for table */
+    }
+
+        .table-custom td, .table-custom th {
+            padding: 8px; /* Padding for table cells */
+            border-bottom: 1px solid #e0e0e0;
+            text-align: center;
+        }
+
+        /* Alternate row coloring */
+        .table-custom tbody tr:nth-child(even) {
+            background-color: #f9f9f9; /* Light gray for alternate rows */
+        }
+
+        /* Highlighted row (if needed) */
+        .table-custom tbody tr:hover {
+            background-color: #e8f5e9; /* Slight green tint for hover effect */
+        }
+</style>
+
+<div class="container">
+    <div class="row">
+        <!-- Students Table -->
+        <div class="col-md-6">
+            <h3>Students</h3>
+            <button style="margin-bottom: 10px;" class="btn btn-primary" data-toggle="modal" data-target="#createStudentModal">Create</button>
+
+            <div class="table-container">
+                <table class="table table-striped table-custom">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Surname</th>
+                            <th>Birthdate</th>
+                            <th>Gender</th>
+                            <th>Class</th>
+                            <th>Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var student in Model.Students)
+                        {
+                            <tr>
+                                <td>@student.Name</td>
+                                <td>@student.Surname</td>
+                                <td>@student.Birthdate.ToShortDateString()</td>
+                                <td>@student.Gender</td>
+                                <td>@student.Class</td>
+                                <td>@student.Point</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Custom Pagination for Students -->
+            <nav aria-label="Student Pagination">
+                <ul class="pagination justify-content-center">
+                    @{
+                        int maxPagesToShow = 6;
+                        int studentStartPage = Math.Max(1, Model.CurrentStudentPage - maxPagesToShow / 2);
+                        int studentEndPage = Math.Min(Model.TotalStudentPages, studentStartPage + maxPagesToShow - 1);
+
+                        if (studentEndPage - studentStartPage < maxPagesToShow - 1)
+                        {
+                            studentStartPage = Math.Max(1, studentEndPage - maxPagesToShow + 1);
+                        }
+                    }
+
+                    @if (Model.CurrentStudentPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Index", new { studentPage = 1, bookPage = Model.CurrentBookPage })">«</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Index", new { studentPage = Model.CurrentStudentPage - 1, bookPage = Model.CurrentBookPage })">‹</a>
+                        </li>
+                    }
+
+                    @for (int i = studentStartPage; i <= studentEndPage; i++)
+                    {
+                        if (i == Model.CurrentStudentPage)
+                        {
+                            <li class="page-item active">
+                                <span class="page-link">@i</span>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("Index", new { studentPage = i, bookPage = Model.CurrentBookPage })">@i</a>
+                            </li>
+                        }
+                    }
+
+                    @if (Model.CurrentStudentPage < Model.TotalStudentPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Index", new { studentPage = Model.CurrentStudentPage + 1, bookPage = Model.CurrentBookPage })">›</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Index", new { studentPage = Model.TotalStudentPages, bookPage = Model.CurrentBookPage })">»</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Books Table -->
+        <div class="col-md-6">
+            <h3>Books</h3>
+            <button style="margin-bottom: 10px;" class="btn btn-primary" data-toggle="modal" data-target="#createBookModal">Create</button>
+            <div class="table-container">
+                <table class="table table-striped table-custom">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Pages</th>
+                            <th>Points</th>
+                            <th>Author</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var book in Model.Books)
+                        {
+                            <tr>
+                                <td>@book.Name</td>
+                                <td>@book.PageCount</td>
+                                <td>@book.Point</td>
+                                <td>@book.Author.Name</td>
+                                <td>@book.Type.Name</td>
+                                <td>@(book.Status ?? "Available")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Custom Pagination for Books -->
+            <nav aria-label="Book Pagination">
+                <ul class="pagination justify-content-center">
+                    @{
+                        int bookStartPage = Math.Max(1, Model.CurrentBookPage - maxPagesToShow / 2);
+                        int bookEndPage = Math.Min(Model.TotalBookPages, bookStartPage + maxPagesToShow - 1);
+
+                        if (bookEndPage - bookStartPage < maxPagesToShow - 1)
+                        {
+                            bookStartPage = Math.Max(1, bookEndPage - maxPagesToShow + 1);
+                        }
+                    }
+
+                    @if (Model.CurrentBookPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Index", new { studentPage = Model.CurrentStudentPage, bookPage = 1 })">«</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Index", new { studentPage = Model.CurrentStudentPage, bookPage = Model.CurrentBookPage - 1 })">‹</a>
+                        </li>
+                    }
+
+                    @for (int i = bookStartPage; i <= bookEndPage; i++)
+                    {
+                        if (i == Model.CurrentBookPage)
+                        {
+                            <li class="page-item active">
+                                <span class="page-link">@i</span>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("Index", new { studentPage = Model.CurrentStudentPage, bookPage = i })">@i</a>
+                            </li>
+                        }
+                    }
+
+                    @if (Model.CurrentBookPage < Model.TotalBookPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Index", new { studentPage = Model.CurrentStudentPage, bookPage = Model.CurrentBookPage + 1 })">›</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Index", new { studentPage = Model.CurrentStudentPage, bookPage = Model.TotalBookPages })">»</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Create Student Modal -->
+<div class="modal fade" id="createStudentModal" tabindex="-1" aria-labelledby="createStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createStudentModalLabel">Add New Student</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="studentForm">
+                    <div class="form-group">
+                        <label for="studentName">Name</label>
+                        <input type="text" class="form-control" name="Name" id="studentName" placeholder="Enter name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentSurname">Surname</label>
+                        <input type="text" class="form-control" name="Surname" id="studentSurname" placeholder="Enter surname" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentBirthdate">Birthdate</label>
+                        <input type="date" class="form-control" name="Birthdate" id="studentBirthdate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentGender">Gender</label>
+                        <select class="form-control" name="Gender" id="studentGender" required>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentClass">Class</label>
+                        <input type="text" class="form-control" name="Class" id="studentClass" placeholder="Enter class" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentPoints">Points</label>
+                        <input type="number" class="form-control" name="Points" id="studentPoints" placeholder="Enter points" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveStudentBtn">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Book Modal -->
+<!-- Create Book Modal -->
+<div class="modal fade" id="createBookModal" tabindex="-1" aria-labelledby="createBookModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createBookModalLabel">Add New Book</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="bookForm">
+                    <div class="form-group">
+                        <label for="bookTitle">Title</label>
+                        <input type="text" class="form-control" id="bookTitle" name="Name" placeholder="Enter title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookPageCount">Page Count</label>
+                        <input type="number" class="form-control" id="bookPageCount" name="PageCount" placeholder="Enter page count" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookPoints">Points</label>
+                        <input type="number" class="form-control" id="bookPoints" name="Point" placeholder="Enter points" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookAuthor">Author</label>
+                        <input type="text" class="form-control" id="bookAuthor" name="Author" placeholder="Enter author name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookType">Type</label>
+                        <select class="form-control" name="TypeId" id="bookType" required>
+                            @foreach (var type in Model.BookTypes)
+                            {
+                                <option value="@type.TypeId">@type.Name</option>
+                            }
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveBookBtn">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        // Handle student form submission
+        $('#saveStudentBtn').click(function () {
+            var formData = $('#studentForm').serialize();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("CreateStudent", "Home")',
+                data: formData,
+                success: function () {
+                    $('#createStudentModal').modal('hide');
+                    location.reload(); // Refresh the page to see new data
+                },
+                error: function (xhr, status, error) {
+                    alert('An error occurred: ' + error);
+                }
+            });
+        });
+
+        $('#saveBookBtn').click(function () {
+            var formData = $('#bookForm').serialize();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("CreateBook", "Home")',
+                data: formData,
+                success: function () {
+                    $('#createBookModal').modal('hide');
+                    location.reload(); // Refresh the page to see new data
+                },
+                error: function (xhr, status, error) {
+                    alert('An error occurred: ' + error);
+                }
+            });
+        });
+    });
+</script>
